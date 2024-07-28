@@ -71,6 +71,20 @@ HealthGuard represents the next step in personalized nutrition and health manage
 
 - **Result:** Sarah makes an informed choice that aligns with her dietary needs and health goals, avoiding potential health issues.
 
+
+## Tech Stack
+
+- **Django**
+
+- **React Native**
+
+- **Python**
+
+## Acknowledgements
+
+This project uses data from the [OpenFoodFacts.org](https://world.openfoodfacts.org/) open-source platform.
+
+
 ## Future Enhancements
 
 - **Expanded Database Integration:**
