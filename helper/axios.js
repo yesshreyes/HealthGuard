@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRefreshToken, getAccessToken, saveUserData, getUser } from '../storage';
 
 const axiosService = axios.create({
-  baseURL: 'http://192.168.212.111:8000/api/v1/', // Change to your server URL
+  baseURL: 'http://172.26.224.226:8000/api/v1/', // Change to your server URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,7 +47,7 @@ const refreshAuthLogic = async (failedRequest) => {
     .post(
       '/user-auth/refresh/',
       { refresh: refreshToken },
-      { baseURL: 'http://192.168.212.111:8000/api' } // Change to your server URL
+      { baseURL: 'http://172.26.224.226:8000/api/v1/' } // Change to your server URL
     )
     .then(async (resp) => {
       const { access } = resp.data;

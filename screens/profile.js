@@ -8,7 +8,7 @@ const NormalProfileScreen = () => {
   const [lastName, setLastName] = useState('');
   const [number, setNumber] = useState('');
   const [mail, setMail] = useState('');
-  const [age, setAge] = useState('');
+  // const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [allergies, setAllergies] = useState('');
@@ -17,14 +17,15 @@ const NormalProfileScreen = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axiosService.get('users/');
-        const userData = response.data[0]; // Assuming the first user is the one we want
+        const response = await axiosService.get('users/me/');
+        const userData = response.data;
+        console.log(userData);
         setUserId(userData.id);
         setFirstName(userData.first_name);
         setLastName(userData.last_name);
         setNumber(userData.phone_no || '');
         setMail(userData.email || '');
-        setAge(userData.age?.toString() || '');
+        // setAge(userData.age?.toString() || '');
         setHeight(userData.height?.toString() || '');
         setWeight(userData.weight?.toString() || '');
         setAllergies(userData.medical_record?.allergies || '');
@@ -43,7 +44,8 @@ const NormalProfileScreen = () => {
       first_name: firstName,
       last_name: lastName,
       phone_no: number,
-      age: parseInt(age, 10),
+      email:mail,
+      // age: parseInt(age, 10),
       height: parseFloat(height),
       weight: parseFloat(weight),
       medical_record: {
@@ -53,11 +55,11 @@ const NormalProfileScreen = () => {
     };
 
     try {
-      const response = await axiosService.put(`users/${userId}/`, profileData); // Assuming 'PUT' is the method to update the profile
+      const response = await axiosService.put(`users/me/`, profileData); // Assuming 'PUT' is the method to update the profile
       console.log('Profile updated:', response.data);
       Alert.alert('Success', 'Profile updated successfully!');
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error updating profile:', error.response.data);
       Alert.alert('Error', 'Failed to update profile.');
     }
   };
@@ -65,6 +67,12 @@ const NormalProfileScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.inputContainer}>
+      <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={mail}
+          editable={false}
+        />
         <TextInput
           style={styles.input}
           placeholder="First Name"
@@ -80,23 +88,10 @@ const NormalProfileScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Phone Number"
-          keyboardType="phone-pad"
           value={number}
           onChangeText={setNumber}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={mail}
-          editable={false}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Age"
-          keyboardType="numeric"
-          value={age}
-          onChangeText={setAge}
-        />
+        
         <TextInput
           style={styles.input}
           placeholder="Height (cm)"
@@ -111,7 +106,7 @@ const NormalProfileScreen = () => {
           value={weight}
           onChangeText={setWeight}
         />
-        <TextInput
+        {/* <TextInput
           style={styles.input}
           placeholder="Allergies"
           value={allergies}
@@ -122,7 +117,7 @@ const NormalProfileScreen = () => {
           placeholder="Dietary Restrictions"
           value={dietaryRestrictions}
           onChangeText={setDietaryRestrictions}
-        />
+        /> */}
       </View>
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Profile</Text>

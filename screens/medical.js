@@ -1,10 +1,66 @@
-// ProfileScreen.js
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import axiosService from '../helper/axios';
 
 const MedicalScreen = () => {
+  const [userId, setUserId] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
+  const [email, setEmail] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
   const [allergies, setAllergies] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosService.get('users/me/');
+        const userData = response.data;
+        console.log(userData);
+        setUserId(userData.id);
+        setFirstName(userData.first_name);
+        setLastName(userData.last_name);
+        setPhoneNo(userData.phone_no || '');
+        setEmail(userData.email || '');
+        setHeight(userData.height?.toString() || '');
+        setWeight(userData.weight?.toString() || '');
+        setAllergies(userData.medical_record?.allergies || '');
+        setDietaryRestrictions(userData.medical_record?.dietary_restrictions || '');
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        Alert.alert('Error', 'Failed to fetch user data.');
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleSave = async () => {
+    const profileData = {
+      first_name: firstName,
+      last_name: lastName,
+      phone_no: phoneNo,
+      email: email,
+      // age: parseInt(age, 10),
+      height: parseFloat(height),
+      weight: parseFloat(weight),
+      medical_record: {
+        allergies: allergies,
+        dietary_restrictions: dietaryRestrictions,
+      },
+    };
+
+    try {
+      const response = await axiosService.put(`users/me/`, profileData);
+      console.log('Profile updated:', response.data);
+      Alert.alert('Success', 'Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update profile.');
+    }
+  };
 
   const formatText = (text) => text.split(',').map((item, index) => (
     <View key={index} style={styles.block}>
@@ -12,15 +68,9 @@ const MedicalScreen = () => {
     </View>
   ));
 
-  const handleSave = () => {
-    // Handle save profile action
-    console.log('Profile saved');
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.inputContainer}>
-      
         <TextInput
           style={styles.input}
           placeholder="Allergies (comma separated)"
@@ -34,9 +84,8 @@ const MedicalScreen = () => {
           onChangeText={setDietaryRestrictions}
         />
       </View>
-    
+
       <View style={styles.blocksContainer}>
-      
         <Text style={styles.sectionTitle}>Allergies</Text>
         {formatText(allergies)}
 
@@ -45,7 +94,7 @@ const MedicalScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Save Profile</Text>
+        <Text style={styles.saveButtonText}>Update Medical profile</Text>
       </TouchableOpacity>
     </ScrollView>
   );
