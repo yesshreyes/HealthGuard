@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Alert, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import axiosService from '../helper/axios';
 
 const ScanScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false); // To track if the barcode has been scanned
-  const [modalVisible, setModalVisible] = useState(false); // To control modal visibility
-  const [productName, setProductName] = useState(''); // To store product name
+  const [scanned, setScanned] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [productName, setProductName] = useState('');
+  const [consumable, setConsumable] = useState('');
+  const [allergen, setAllergen] = useState('');
+  const [dietaryRestriction, setDietaryRestriction] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -18,18 +23,24 @@ const ScanScreen = ({ navigation }) => {
 
   const handleBarCodeScanned = async ({ type, data }) => {
     if (!scanned) {
-      setScanned(true); // Prevent multiple scans
+      setScanned(true);
+      setLoading(true);
+      setError('');
 
-      // Make API request to Django backend
       try {
         const response = await axiosService.post('predict/', { barcode: data });
         console.log(response.data);
-        setProductName(response.data.product_name); // Assuming the response contains product_name
-        setModalVisible(true); // Show modal with product information
+        setProductName(response.data.product_name);
+        setConsumable(response.data.consumable);
+        setAllergen(response.data.allergen);
+        setDietaryRestriction(response.data.dietary_restriction);
+        setModalVisible(true);
       } catch (error) {
         console.error('Error:', error);
-        Alert.alert('API Error', 'Failed to send data to backend');
-        setScanned(false); // Allow scanning again in case of error
+        setError('Failed to send data to backend');
+        setScanned(false);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -44,7 +55,7 @@ const ScanScreen = ({ navigation }) => {
 
   const handleCloseModal = () => {
     setModalVisible(false);
-    setScanned(false); // Allow scanning again after closing modal
+    setScanned(false);
   };
 
   return (
@@ -58,7 +69,13 @@ const ScanScreen = ({ navigation }) => {
             style={styles.camera}
           />
         </View>
+
+        {loading && (
+          <ActivityIndicator size="large" color="#fff" style={styles.loading} />
+        )}
       </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <Modal
         transparent={true}
@@ -67,8 +84,11 @@ const ScanScreen = ({ navigation }) => {
         animationType="slide"
       >
         <View style={styles.modalContainer}>
-          <View style={styles.dialogContainer}>
+          <View style={[styles.dialogContainer, { backgroundColor: consumable === 'Yes' ? '#00FF00' : '#FF0000' }]}>
             <Text style={styles.productName}>{productName}</Text>
+            <Text style={styles.consumableText}>Consumable: {consumable}</Text>
+            <Text style={styles.detailText}>Allergen: {allergen}</Text>
+            <Text style={styles.detailText}>Dietary Restriction: {dietaryRestriction}</Text>
             <TouchableOpacity style={styles.okButton} onPress={handleCloseModal}>
               <Text style={styles.buttonText}>Okay!</Text>
             </TouchableOpacity>
@@ -82,7 +102,7 @@ const ScanScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#004000', // darker green
+    backgroundColor: '#004000',
     padding: 16,
   },
   content: {
@@ -104,16 +124,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5, // Android shadow
-    shadowColor: '#000', // iOS shadow
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    overflow: 'hidden', // Ensure camera doesn't overflow container
+    overflow: 'hidden',
   },
   camera: {
     width: '100%',
     height: '100%',
+  },
+  loading: {
+    marginTop: 20,
+  },
+  errorText: {
+    color: '#ff0000',
+    textAlign: 'center',
+    marginTop: 10,
   },
   modalContainer: {
     flex: 1,
@@ -123,12 +151,11 @@ const styles = StyleSheet.create({
   },
   dialogContainer: {
     width: '80%',
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
-    elevation: 5, // Android shadow
-    shadowColor: '#000', // iOS shadow
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -137,6 +164,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  consumableText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 8,
   },
   okButton: {
     backgroundColor: '#2196F3',

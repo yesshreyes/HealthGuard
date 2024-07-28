@@ -34,7 +34,7 @@ const SignUpScreen = () => {
     console.log('Data being sent:', userData);
 
     try {
-      const response = await axios.post('http://192.168.212.111:8000/api/v1/user-auth/register/', userData);
+      const response = await axios.post('http://172.26.224.226:8000/api/v1/user-auth/register/', userData);
 
       const { data } = response;
 

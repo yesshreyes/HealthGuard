@@ -1,4 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
 
@@ -7,6 +9,13 @@ class CustomUserManager(BaseUserManager):
     Custom user model manager where email is the unique identifiers
     for authentication instead of usernames.
     """
+
+    def get_object_by_public_id(self, public_id):
+        try:
+            instance = self.get(public_id=public_id)
+            return instance
+        except(ObjectDoesNotExist, ValueError, TypeError):
+            return Http404
     def create_user(self, email, password, **extra_fields):
         """
         Create and save a user with the given email and password.

@@ -62,13 +62,14 @@ class PredictSuitabilityView(APIView):
 
             user = request.user
             user_profile = get_object_or_404(MedicalRecord, user=user)
-            user_allergies = user_profile.allergies
-            user_dietary_restrictions = user_profile.dietary_restrictions
+            user_allergies = user_profile.allergies.split(',')
+            user_dietary_restrictions = user_profile.dietary_restrictions.split(',')
+            print(user_allergies,user_dietary_restrictions)
 
             if allergen in user_allergies or dietary_restriction in user_dietary_restrictions:
-                return Response({'consumable': 'No', 'allergen': allergen, 'dietary_restriction': dietary_restriction})
+                return Response({'consumable': 'No', 'allergen': allergen, 'dietary_restriction': dietary_restriction,"product_name":product_name})
 
-            return Response({'consumable': 'Yes', 'allergen': allergen, 'dietary_restriction': dietary_restriction})
+            return Response({'consumable': 'Yes', 'allergen': allergen, 'dietary_restriction': dietary_restriction,"product_name":product_name})
 
         except Exception as e:
             logger.error(f"Error during prediction: {e}")
