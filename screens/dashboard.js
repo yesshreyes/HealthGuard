@@ -1,14 +1,50 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import axiosService from '../helper/axios';
 
 const DashboardScreen = ({ navigation }) => {
-  // Height in feet and inches converted to meters
-  const heightInMeters = (5 * 0.3048) + (11 * 0.0254); // 5 feet 11 inches to meters
-  const weightInKg = 90; // Weight in kg
+  const [userData, setUserData] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axiosService.get('users/');
+      const userDataArray = response.data;
+
+      if (userDataArray.length > 0) {
+        setUserData(userDataArray[0]);
+      } else {
+        Alert.alert('Error', 'No user data found.');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      Alert.alert('Error', 'Failed to fetch user data.');
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchUserData().then(() => setRefreshing(false));
+  }, []);
+
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  const heightInMeters = userData.height ? userData.height / 100 : 0; // Assuming height is in cm
+  const weightInKg = userData.weight || 0; // Weight in kg
 
   // Calculate BMI
-  const bmi = weightInKg / (heightInMeters * heightInMeters);
+  const bmi = heightInMeters ? weightInKg / (heightInMeters * heightInMeters) : 0;
   const bmiRounded = bmi.toFixed(1);
 
   // Determine BMI category
@@ -19,9 +55,12 @@ const DashboardScreen = ({ navigation }) => {
   else bmiCategory = 'Obesity';
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome Tamanna!</Text>
+        <Text style={styles.welcomeText}>Welcome {userData.first_name}!</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
@@ -52,18 +91,29 @@ const DashboardScreen = ({ navigation }) => {
           <Text style={styles.medicalReportButtonText}>Medical Report</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#2196F3',
     paddingTop: 32,
     paddingRight: 16,
     paddingLeft: 16,
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#2196F3',
+  },
+  loadingText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   header: {
     flexDirection: 'row',

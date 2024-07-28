@@ -22,15 +22,12 @@ const DialogScreen = ({ visible, onClose }) => {
               <View style={styles.checkmark}>
                 <FontAwesome name="check" size={32} color="#fff" />
               </View>
-              <Text style={styles.infoText}>Allergy</Text>
+              <Text style={styles.infoText}>Allergy: David</Text>
             </View>
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.okButton]} onPress={onClose}>
               <Text style={styles.buttonText}>Okay!</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.alternativesButton]}>
-              <Text style={styles.buttonText}>Alternatives</Text>
             </TouchableOpacity>
           </View>
         </View>

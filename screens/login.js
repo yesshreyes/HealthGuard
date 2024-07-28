@@ -1,7 +1,9 @@
 // LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
+import { saveUserData } from '../storage';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -9,13 +11,44 @@ const LoginScreen = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigation = useNavigation();
 
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('http://192.168.212.111:8000/api/v1/login/', {
+        email,
+        password,
+      });
+      
+      // Assuming the response contains user data and a token
+      const { data } = response;
+      await saveUserData(data);
+      // Navigate to the dashboard
+      navigation.navigate('Dashboard');
+      
+      // Optionally, save user data and token in local storage or context
+      // e.g., AsyncStorage.setItem('userToken', data.token);
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        Alert.alert('Login Failed', error.response.data.message);
+      } else if (error.request) {
+        // The request was made but no response was received
+        Alert.alert('Network Error', 'Please check your internet connection and try again.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hello{'\n'}Welcome Back!</Text>
       
       <TextInput
         style={styles.input}
-        placeholder="GITAM mail"
+        placeholder="Mail"
         placeholderTextColor="#000"
         value={email}
         onChangeText={setEmail}
@@ -41,7 +74,7 @@ const LoginScreen = () => {
       
       <Button
         title="Log In"
-        onPress={() => navigation.navigate('Dashboard')}
+        onPress={handleLogin}
         color="#fff"
       />
       

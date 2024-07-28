@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, SafeAreaView, Alert, Modal, TouchableOpacity } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import axiosService from '../helper/axios';
 
 const ScanScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false); // To track if the barcode has been scanned
+  const [modalVisible, setModalVisible] = useState(false); // To control modal visibility
+  const [productName, setProductName] = useState(''); // To store product name
 
   useEffect(() => {
     (async () => {
@@ -17,24 +19,17 @@ const ScanScreen = ({ navigation }) => {
   const handleBarCodeScanned = async ({ type, data }) => {
     if (!scanned) {
       setScanned(true); // Prevent multiple scans
-      Alert.alert(`Barcode scanned!`, `Type: ${type}\nData: ${data}`);
 
       // Make API request to Django backend
       try {
-        const response = await fetch('https://your-django-backend-url/api/endpoint/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ barcode: data }),
-        });
-
-        const result = await response.json();
-        console.log(result);
-        Alert.alert('API Response', JSON.stringify(result));
+        const response = await axiosService.post('predict/', { barcode: data });
+        console.log(response.data);
+        setProductName(response.data.product_name); // Assuming the response contains product_name
+        setModalVisible(true); // Show modal with product information
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('API Error', 'Failed to send data to backend');
+        setScanned(false); // Allow scanning again in case of error
       }
     }
   };
@@ -46,6 +41,11 @@ const ScanScreen = ({ navigation }) => {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setScanned(false); // Allow scanning again after closing modal
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,6 +59,22 @@ const ScanScreen = ({ navigation }) => {
           />
         </View>
       </View>
+
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={handleCloseModal}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.dialogContainer}>
+            <Text style={styles.productName}>{productName}</Text>
+            <TouchableOpacity style={styles.okButton} onPress={handleCloseModal}>
+              <Text style={styles.buttonText}>Okay!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -98,6 +114,38 @@ const styles = StyleSheet.create({
   camera: {
     width: '100%',
     height: '100%',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  dialogContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    alignItems: 'center',
+    elevation: 5, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  productName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  okButton: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

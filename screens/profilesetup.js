@@ -1,6 +1,6 @@
-// ProfileScreen.js
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import axiosService from '../helper/axios';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -8,9 +8,40 @@ const ProfileScreen = () => {
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-  const [healthProblems, setHealthProblems] = useState('');
   const [allergies, setAllergies] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosService.get('users/');
+        const userDataArray = response.data;
+
+        // Assuming we are fetching data for the first user in the array
+        if (userDataArray.length > 0) {
+          const userData = userDataArray[0];
+
+          setName(`${userData.first_name} ${userData.last_name}`);
+          setNumber(userData.phone_no || '');
+          setAge(userData.age?.toString() || '');
+          setHeight(userData.height?.toString() || '');
+          setWeight(userData.weight?.toString() || '');
+
+          // Check if medical_record exists before accessing its properties
+          const medicalRecord = userData.medical_record || {};
+          setAllergies(medicalRecord.allergies || '');
+          setDietaryRestrictions(medicalRecord.dietary_restrictions || '');
+        } else {
+          Alert.alert('Error', 'No user data found.');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        Alert.alert('Error', 'Failed to fetch user data.');
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const formatText = (text) => text.split(',').map((item, index) => (
     <View key={index} style={styles.block}>
@@ -18,9 +49,32 @@ const ProfileScreen = () => {
     </View>
   ));
 
-  const handleSave = () => {
-    // Handle save profile action
-    console.log('Profile saved');
+  const handleSave = async () => {
+    const profileData = {
+      name: name,
+      phone_no: number,
+      age: age,
+      height: height,
+      weight: weight,
+      allergies: allergies,
+      dietary_restrictions: dietaryRestrictions,
+    };
+
+    console.log('Data being sent:', profileData);
+
+    try {
+      const response = await axiosService.post('users/', profileData);
+      console.log('Profile saved:', response.data);
+      Alert.alert('Success', 'Profile saved successfully!');
+    } catch (error) {
+      if (error.response) {
+        Alert.alert('Save Failed', error.response.data.message);
+      } else if (error.request) {
+        Alert.alert('Network Error', 'Please check your internet connection and try again.');
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      }
+    }
   };
 
   return (
@@ -62,12 +116,6 @@ const ProfileScreen = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder="Health Problems (comma separated)"
-          value={healthProblems}
-          onChangeText={setHealthProblems}
-        />
-        <TextInput
-          style={styles.input}
           placeholder="Allergies (comma separated)"
           value={allergies}
           onChangeText={setAllergies}
@@ -81,9 +129,6 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.blocksContainer}>
-        <Text style={styles.sectionTitle}>Health Problems</Text>
-        {formatText(healthProblems)}
-
         <Text style={styles.sectionTitle}>Allergies</Text>
         {formatText(allergies)}
 

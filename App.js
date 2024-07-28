@@ -17,13 +17,13 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {/* <Stack.Screen name="Login" component={LoginScreen} /> */}
-        {/* <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} /> */}
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        {/* <Stack.Screen name="SignUp" component={SignUpScreen} /> */}
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Scan" component={ScanScreen} />
         {/* <Stack.Screen name="Example" component={ExampleUsageScreen} /> */}
-        {/* <Stack.Screen name="ProfileSetUp" component={ProfileScreen} /> */}
+        <Stack.Screen name="ProfileSetUp" component={ProfileScreen} />
         <Stack.Screen name="Profile" component={NormalProfileScreen} />
         <Stack.Screen name="Medical" component={MedicalScreen} />
       </Stack.Navigator>

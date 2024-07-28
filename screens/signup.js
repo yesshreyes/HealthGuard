@@ -1,11 +1,14 @@
 // SignUpScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button, LogBox } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button, Alert, LogBox } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']);
 
 const SignUpScreen = () => {
+  const [firstname, setFirst] = useState('');
+  const [lastname, setLast] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -20,22 +23,55 @@ const SignUpScreen = () => {
     }
   }, [registrationStatus, navigation]);
 
-  const handleRegister = () => {
-    console.log("Register button clicked with email:", email);
-    // Mock registration process
-    setTimeout(() => {
+  const handleRegister = async () => {
+    const userData = {
+      first_name: firstname,
+      last_name: lastname,
+      email: email,
+      password: password,
+    };
+
+    console.log('Data being sent:', userData);
+
+    try {
+      const response = await axios.post('http://192.168.212.111:8000/api/v1/user-auth/register/', userData);
+
+      const { data } = response;
+
       setRegistrationStatus(true);
-    }, 1000);
+
+    } catch (error) {
+      if (error.response) {
+        Alert.alert('Registration Failed', error.response.data.message);
+      } else if (error.request) {
+        Alert.alert('Network Error', 'Please check your internet connection and try again.');
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      }
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create an Account</Text>
       <Text style={styles.subtitle}>Let's Connect</Text>
-
       <TextInput
         style={styles.input}
-        placeholder="GITAM mail"
+        placeholder="First Name"
+        placeholderTextColor="#000"
+        value={firstname}
+        onChangeText={setFirst}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        placeholderTextColor="#000"
+        value={lastname}
+        onChangeText={setLast}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="E mail"
         placeholderTextColor="#000"
         value={email}
         onChangeText={setEmail}

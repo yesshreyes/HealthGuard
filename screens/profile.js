@@ -1,17 +1,65 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import axiosService from '../helper/axios';
 
 const NormalProfileScreen = () => {
-  const [name, setName] = useState('');
+  const [userId, setUserId] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [number, setNumber] = useState('');
   const [mail, setMail] = useState('');
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+  const [allergies, setAllergies] = useState('');
+  const [dietaryRestrictions, setDietaryRestrictions] = useState('');
 
-  const handleSave = () => {
-    // Handle save profile action
-    console.log('Profile saved');
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosService.get('users/');
+        const userData = response.data[0]; // Assuming the first user is the one we want
+        setUserId(userData.id);
+        setFirstName(userData.first_name);
+        setLastName(userData.last_name);
+        setNumber(userData.phone_no || '');
+        setMail(userData.email || '');
+        setAge(userData.age?.toString() || '');
+        setHeight(userData.height?.toString() || '');
+        setWeight(userData.weight?.toString() || '');
+        setAllergies(userData.medical_record?.allergies || '');
+        setDietaryRestrictions(userData.medical_record?.dietary_restrictions || '');
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        Alert.alert('Error', 'Failed to fetch user data.');
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleSave = async () => {
+    const profileData = {
+      first_name: firstName,
+      last_name: lastName,
+      phone_no: number,
+      age: parseInt(age, 10),
+      height: parseFloat(height),
+      weight: parseFloat(weight),
+      medical_record: {
+        allergies: allergies,
+        dietary_restrictions: dietaryRestrictions,
+      },
+    };
+
+    try {
+      const response = await axiosService.put(`users/${userId}/`, profileData); // Assuming 'PUT' is the method to update the profile
+      console.log('Profile updated:', response.data);
+      Alert.alert('Success', 'Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile.');
+    }
   };
 
   return (
@@ -19,9 +67,15 @@ const NormalProfileScreen = () => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
         />
         <TextInput
           style={styles.input}
@@ -34,7 +88,7 @@ const NormalProfileScreen = () => {
           style={styles.input}
           placeholder="Email"
           value={mail}
-          onChangeText={setMail}
+          editable={false}
         />
         <TextInput
           style={styles.input}
@@ -56,6 +110,18 @@ const NormalProfileScreen = () => {
           keyboardType="numeric"
           value={weight}
           onChangeText={setWeight}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Allergies"
+          value={allergies}
+          onChangeText={setAllergies}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Dietary Restrictions"
+          value={dietaryRestrictions}
+          onChangeText={setDietaryRestrictions}
         />
       </View>
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -80,24 +146,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     fontSize: 16,
-  },
-  blocksContainer: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  block: {
-    backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 5,
-    marginBottom: 8,
-  },
-  blockText: {
-    color: '#2196F3',
   },
   saveButton: {
     backgroundColor: '#fff',

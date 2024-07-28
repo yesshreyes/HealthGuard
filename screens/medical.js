@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 
 const MedicalScreen = () => {
-  const [healthProblems, setHealthProblems] = useState('');
   const [allergies, setAllergies] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
 
@@ -21,12 +20,7 @@ const MedicalScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Health Problems (comma separated)"
-          value={healthProblems}
-          onChangeText={setHealthProblems}
-        />
+      
         <TextInput
           style={styles.input}
           placeholder="Allergies (comma separated)"
@@ -40,11 +34,9 @@ const MedicalScreen = () => {
           onChangeText={setDietaryRestrictions}
         />
       </View>
-
+    
       <View style={styles.blocksContainer}>
-        <Text style={styles.sectionTitle}>Health Problems</Text>
-        {formatText(healthProblems)}
-
+      
         <Text style={styles.sectionTitle}>Allergies</Text>
         {formatText(allergies)}
 
