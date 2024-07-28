@@ -84,16 +84,21 @@ const ScanScreen = ({ navigation }) => {
         animationType="slide"
       >
         <View style={styles.modalContainer}>
-          <View style={[styles.dialogContainer, { backgroundColor: consumable === 'Yes' ? '#00FF00' : '#FF0000' }]}>
-            <Text style={styles.productName}>{productName}</Text>
-            <Text style={styles.consumableText}>Consumable: {consumable}</Text>
-            <Text style={styles.detailText}>Allergen: {allergen}</Text>
-            <Text style={styles.detailText}>Dietary Restriction: {dietaryRestriction}</Text>
-            <TouchableOpacity style={styles.okButton} onPress={handleCloseModal}>
-              <Text style={styles.buttonText}>Okay!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+  <View style={[styles.dialogContainer, { backgroundColor: consumable === 'Yes' ? '#00FF00' : '#FF0000' }]}>
+    <Text style={styles.productName}>{productName}</Text>
+    <Text style={styles.consumableText}>Consumable: {consumable}</Text>
+    {consumable === 'No' && (
+      <>
+        <Text style={styles.detailText}>Allergen: {allergen}</Text>
+        <Text style={styles.detailText}>Dietary Restriction: {dietaryRestriction}</Text>
+      </>
+    )}
+    <TouchableOpacity style={styles.okButton} onPress={handleCloseModal}>
+      <Text style={styles.buttonText}>Okay!</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+
       </Modal>
     </SafeAreaView>
   );

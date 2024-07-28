@@ -11,6 +11,7 @@ const DashboardScreen = ({ navigation }) => {
     try {
       const response = await axiosService.get('users/');
       const userDataArray = response.data;
+      console.log(userDataArray);
 
       if (userDataArray.length > 0) {
         setUserData(userDataArray[0]);
