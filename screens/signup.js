@@ -1,4 +1,3 @@
-// SignUpScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button, Alert, LogBox } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -71,7 +70,7 @@ const SignUpScreen = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="E mail"
+        placeholder="Email"
         placeholderTextColor="#000"
         value={email}
         onChangeText={setEmail}
@@ -79,28 +78,28 @@ const SignUpScreen = () => {
 
       <View style={styles.passwordContainer}>
         <TextInput
-          style={styles.input}
+          style={styles.passwordInput}
           placeholder="Password"
           placeholderTextColor="#000"
           secureTextEntry={!passwordVisible}
           value={password}
           onChangeText={setPassword}
         />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.togglePasswordContainer}>
           <Text style={styles.togglePassword}>{passwordVisible ? 'Hide' : 'Show'}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.passwordContainer}>
         <TextInput
-          style={styles.input}
+          style={styles.passwordInput}
           placeholder="Confirm Password"
           placeholderTextColor="#000"
           secureTextEntry={!conPasswordVisible}
           value={conPassword}
           onChangeText={setConPassword}
         />
-        <TouchableOpacity onPress={() => setConPasswordVisible(!conPasswordVisible)}>
+        <TouchableOpacity onPress={() => setConPasswordVisible(!conPasswordVisible)} style={styles.togglePasswordContainer}>
           <Text style={styles.togglePassword}>{conPasswordVisible ? 'Hide' : 'Show'}</Text>
         </TouchableOpacity>
       </View>
@@ -108,7 +107,7 @@ const SignUpScreen = () => {
       <Button
         title="Register"
         onPress={handleRegister}
-        color="#fff"
+        color="#000"
       />
 
       <View style={styles.newUserContainer}>
@@ -152,8 +151,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  passwordInput: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 10,
+  },
+  togglePasswordContainer: {
+    padding: 10,
+  },
   togglePassword: {
-    marginLeft: 10,
     color: 'yellow',
   },
   newUserContainer: {
